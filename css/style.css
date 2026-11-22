@@ -1,0 +1,276 @@
+
+* {
+  box-sizing: border-box; 
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-primario: #2563eb;
+  --color-primario-hover: #1d4ed8;
+  --color-secundario: #1e293b;
+  --color-fondo: #f8fafc;
+  --color-tarjeta: #ffffff;
+  --color-texto: #334155;
+  --color-exito: #16a34a;
+  --color-alerta: #dc2626;
+  --fuente-principal: Arial, Helvetica, sans-serif;
+}
+
+body {
+  font-family: var(--fuente-principal);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  line-height: 1.6;
+}
+
+/* ===================================================
+   2. HEADER Y NAVEGACIÓN (Flexbox)
+   =================================================== */
+.header-principal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-secundario);
+  padding: 15px 5%;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo h1 {
+  color: #ffffff;
+  font-size: 1.5rem;
+}
+
+.logo span {
+  color: var(--color-primario);
+}
+
+.nav-principal {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-principal a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.nav-principal a:hover {
+  color: var(--color-primario);
+}
+
+.btn-nav {
+  background-color: var(--color-primario);
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.btn-nav:hover {
+  background-color: var(--color-primario-hover);
+  color: #ffffff !important;
+}
+
+/* ===================================================
+   3. SECCIONES Y BOTONES
+   =================================================== */
+.seccion-padding {
+  padding: 60px 5%;
+}
+
+.bg-alt {
+  background-color: #e2e8f0;
+}
+
+.titulo-seccion {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: var(--color-secundario);
+}
+
+.subtitulo-seccion {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #64748b;
+}
+
+.btn-primario {
+  display: inline-block;
+  background-color: var(--color-primario);
+  color: #ffffff;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primario:hover {
+  background-color: var(--color-primario-hover);
+}
+
+.btn-bloque {
+  width: 100%;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(rgba(30, 41, 59, 0.85), rgba(30, 41, 59, 0.85)),
+              url('https://picsum.photos/1200/600') center/cover no-repeat;
+  color: #ffffff;
+  text-align: center;
+  padding: 100px 5%;
+}
+
+.hero-contenido {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-contenido h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.hero-contenido p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+/* ===================================================
+   4. TARJETAS Y FORMULARIOS
+   =================================================== */
+.form-estilizado {
+  background-color: var(--color-tarjeta);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.campo-grupo {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.campo-grupo label {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.campo-grupo input,
+.campo-grupo select {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.campo-grupo input:focus,
+.campo-grupo select:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+.texto-error {
+  color: var(--color-alerta);
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+/* Calculadora */
+.contenedor-calculadora,
+.contenedor-formulario {
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+.resultado-caja {
+  margin-top: 25px;
+  padding: 20px;
+  background-color: var(--color-tarjeta);
+  border-left: 5px solid var(--color-primario);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.monto-ahorro {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-exito);
+  margin: 10px 0;
+}
+
+.oculto {
+  display: none;
+}
+
+/* Footer */
+.footer-principal {
+  background-color: var(--color-secundario);
+  color: #ffffff;
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+}
+
+/* ===================================================
+   5. DISEÑO ADAPTATIVO (MEDIA QUERIES)
+   ===================================================
+   Reglas de composición por columnas:
+   - Móvil (< 600px): 1 columna
+   - Tablet (600px a 1200px): 2 columnas
+   - Escritorio (>= 1200px): 3 columnas
+   =================================================== */
+
+/* Base: 1 columna (Móviles por defecto) */
+.contenedor-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tarjeta-funcion {
+  background-color: var(--color-tarjeta);
+  padding: 25px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.icono-tarjeta {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+/* 2 Columnas (Tablets) */
+@media screen and (min-width: 600px) and (max-width: 1199.98px) {
+  .contenedor-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .tarjeta-funcion {
+    flex: 1 1 calc(50% - 20px);
+  }
+}
+
+/* 3 Columnas (Escritorio / Laptops) */
+@media screen and (min-width: 1200px) {
+  .contenedor-grid {
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .tarjeta-funcion {
+    flex: 1;
+  }
+}

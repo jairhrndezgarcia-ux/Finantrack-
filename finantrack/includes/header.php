@@ -25,6 +25,9 @@ $mensajeFlash = flash();
       <?php if (usuario_autenticado()): ?>
         <span class="nav-usuario">Hola, <?= e($_SESSION['usuario_nombre']) ?></span>
         <a href="<?= $base . ruta_inicio() ?>"><?= es_admin() ? 'Panel de administración' : 'Mi panel' ?></a>
+        <?php if (!es_admin()): ?>
+          <a href="<?= $base ?>transacciones.php">Transacciones</a>
+        <?php endif; ?>
         <a href="<?= $base . (es_admin() ? 'admin/categorias.php' : 'categorias.php') ?>">Categorías</a>
         <a href="<?= $base ?>logout.php" class="btn-nav">Cerrar sesión</a>
       <?php else: ?>

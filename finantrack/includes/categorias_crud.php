@@ -6,6 +6,8 @@
 //   categorias.php        -> $propietario = id del usuario (categorías privadas)
 //   admin/categorias.php  -> $propietario = null (categorías globales)
 
+require_once __DIR__ . '/db.php';
+
 // Íconos permitidos (el usuario elige uno del selector)
 const ICONOS_CATEGORIA = [
     '💰', '💼', '🛒', '💵', '🍽️', '🏠', '🚌', '🚗', '💡', '🩺',
@@ -21,17 +23,6 @@ function condicion_propietario(?int $propietario): array
     return $propietario === null
         ? ['usuario_id IS NULL', '', []]
         : ['usuario_id = ?', 'i', [$propietario]];
-}
-
-/** Ejecuta una consulta preparada y devuelve el statement. */
-function ejecutar(mysqli $cx, string $sql, string $tipos = '', array $params = []): mysqli_stmt
-{
-    $stmt = mysqli_prepare($cx, $sql);
-    if ($tipos !== '') {
-        mysqli_stmt_bind_param($stmt, $tipos, ...$params);
-    }
-    mysqli_stmt_execute($stmt);
-    return $stmt;
 }
 
 /**

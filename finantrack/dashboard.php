@@ -22,7 +22,7 @@ require 'includes/header.php';
         <div class="icono-tarjeta">💸</div>
         <h3>Transacciones</h3>
         <p>Registra y consulta tus ingresos y gastos.</p>
-        <span class="etiqueta-pronto">Próximamente</span>
+        <a href="transacciones.php" class="btn-primario btn-chico">Abrir</a>
       </article>
 
       <article class="tarjeta-funcion">

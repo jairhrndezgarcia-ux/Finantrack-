@@ -270,7 +270,198 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ===================================================
-     5. MENSAJES EMERGENTES (toast) - se ocultan solos
+     5. MÓDULO DE TRANSACCIONES (transacciones.php)
+     =================================================== */
+  const modalTransaccion = document.getElementById('modal-transaccion');
+
+  if (modalTransaccion) {
+    const formTrans = document.getElementById('form-transaccion');
+    const campoAccionT = document.getElementById('trans-accion');
+    const campoIdT = document.getElementById('trans-id');
+    const campoMonto = document.getElementById('trans-monto');
+    const campoFecha = document.getElementById('trans-fecha');
+    const campoCategoriaT = document.getElementById('trans-categoria');
+    const campoMetodo = document.getElementById('trans-metodo');
+    const campoNotas = document.getElementById('trans-notas');
+    const contadorNotas = document.getElementById('contador-notas');
+    const errorTrans = document.getElementById('error-transaccion');
+    const tituloTrans = document.getElementById('modal-trans-titulo');
+    const radiosTipo = formTrans.querySelectorAll('input[name="tipo"]');
+    const hoy = campoFecha.max;
+
+    function tipoSeleccionado() {
+      return formTrans.querySelector('input[name="tipo"]:checked').value;
+    }
+
+    function marcarTipo(tipo) {
+      radiosTipo.forEach((radio) => { radio.checked = radio.value === tipo; });
+      filtrarCategoriasPorTipo();
+    }
+
+    // Solo se muestran las categorías del tipo elegido (ingreso o gasto)
+    function filtrarCategoriasPorTipo() {
+      const tipo = tipoSeleccionado();
+      let primeraVisible = null;
+
+      [...campoCategoriaT.options].forEach((opcion) => {
+        const visible = opcion.dataset.tipo === tipo;
+        opcion.hidden = !visible;
+        opcion.disabled = !visible;
+        if (visible && !primeraVisible) primeraVisible = opcion;
+      });
+
+      const actual = campoCategoriaT.selectedOptions[0];
+      if ((!actual || actual.disabled) && primeraVisible) {
+        primeraVisible.selected = true;
+      }
+      modalTransaccion.dataset.tipo = tipo; // cambia el color del modal (CSS)
+    }
+
+    radiosTipo.forEach((radio) => radio.addEventListener('change', filtrarCategoriasPorTipo));
+
+    function actualizarContadorNotas() {
+      contadorNotas.textContent = `${campoNotas.value.length} / 255`;
+    }
+    campoNotas.addEventListener('input', actualizarContadorNotas);
+
+    // --- Abrir modal: nuevo (con el tipo del botón) o edición (con precarga) ---
+    function abrirModalTransaccion(tipoNuevo, datos) {
+      const editando = Boolean(datos);
+      formTrans.reset();
+      errorTrans.textContent = '';
+
+      campoAccionT.value = editando ? 'editar' : 'crear';
+      campoIdT.value = editando ? datos.id : '0';
+      tituloTrans.textContent = editando ? 'Editar movimiento' : (tipoNuevo === 'ingreso' ? 'Nuevo ingreso' : 'Nuevo gasto');
+
+      if (editando) {
+        marcarTipo(datos.tipo);
+        campoMonto.value = datos.monto;
+        campoFecha.value = datos.fecha;
+        campoCategoriaT.value = datos.categoria;
+        campoMetodo.value = datos.metodo;
+        campoNotas.value = datos.notas;
+      } else {
+        marcarTipo(tipoNuevo);
+        campoFecha.value = hoy;
+      }
+
+      actualizarContadorNotas();
+      modalTransaccion.showModal();
+      campoMonto.focus();
+    }
+
+    document.querySelectorAll('[data-nuevo]').forEach((boton) => {
+      boton.addEventListener('click', () => abrirModalTransaccion(boton.dataset.nuevo, null));
+    });
+
+    document.querySelectorAll('.btn-editar-trans').forEach((boton) => {
+      boton.addEventListener('click', () => abrirModalTransaccion(null, boton.dataset));
+    });
+
+    document.getElementById('btn-cancelar-trans')
+      .addEventListener('click', () => modalTransaccion.close());
+
+    modalTransaccion.addEventListener('click', (event) => {
+      if (event.target === modalTransaccion) modalTransaccion.close();
+    });
+
+    // --- Validación antes de enviar ---
+    formTrans.addEventListener('submit', (event) => {
+      let mensaje = '';
+      const monto = Number(campoMonto.value);
+
+      if (!campoMonto.value || monto <= 0) {
+        mensaje = 'Escribe un monto mayor a 0.';
+      } else if (!/^\d+(\.\d{1,2})?$/.test(campoMonto.value)) {
+        mensaje = 'El monto puede tener máximo 2 decimales.';
+      } else if (!campoFecha.value) {
+        mensaje = 'Selecciona una fecha.';
+      } else if (campoFecha.value > hoy) {
+        mensaje = 'La fecha no puede ser futura.';
+      } else if (!campoCategoriaT.value || campoCategoriaT.selectedOptions[0].disabled) {
+        mensaje = 'Selecciona una categoría.';
+      }
+
+      if (mensaje) {
+        event.preventDefault();
+        errorTrans.textContent = mensaje;
+      }
+    });
+
+    // --- Borrado lógico con confirmación ---
+    document.querySelectorAll('.form-eliminar-trans').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        if (!confirm(`¿Eliminar el movimiento "${form.dataset.descripcion}"?\nEl saldo se recalculará.`)) {
+          event.preventDefault();
+        }
+      });
+    });
+
+    // --- Rangos rápidos de fechas para los filtros ---
+    const formFiltros = document.getElementById('form-filtros');
+    const filtroDesde = document.getElementById('f-desde');
+    const filtroHasta = document.getElementById('f-hasta');
+
+    // Fecha local en formato AAAA-MM-DD (sin desfase por zona horaria)
+    function aISO(fecha) {
+      const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+      const dia = String(fecha.getDate()).padStart(2, '0');
+      return `${fecha.getFullYear()}-${mes}-${dia}`;
+    }
+
+    document.querySelectorAll('[data-rango]').forEach((boton) => {
+      boton.addEventListener('click', () => {
+        const ahora = new Date();
+        const anio = ahora.getFullYear();
+        const mes = ahora.getMonth();
+        let desde;
+        let hasta;
+
+        switch (boton.dataset.rango) {
+          case 'mes':
+            desde = new Date(anio, mes, 1);
+            hasta = new Date(anio, mes + 1, 0); // día 0 del siguiente mes = último día
+            break;
+          case 'mes-pasado':
+            desde = new Date(anio, mes - 1, 1);
+            hasta = new Date(anio, mes, 0);
+            break;
+          case '30':
+            desde = new Date(anio, mes, ahora.getDate() - 29);
+            hasta = ahora;
+            break;
+          case 'anio':
+            desde = new Date(anio, 0, 1);
+            hasta = new Date(anio, 11, 31);
+            break;
+          default:
+            return;
+        }
+
+        filtroDesde.value = aISO(desde);
+        filtroHasta.value = aISO(hasta);
+        formFiltros.submit();
+      });
+    });
+
+    // Marcar el rango rápido que coincide con las fechas actuales
+    document.querySelectorAll('[data-rango]').forEach((boton) => {
+      const ahora = new Date();
+      const rangos = {
+        mes: [aISO(new Date(ahora.getFullYear(), ahora.getMonth(), 1)), aISO(new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0))],
+        'mes-pasado': [aISO(new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1)), aISO(new Date(ahora.getFullYear(), ahora.getMonth(), 0))],
+        30: [aISO(new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - 29)), aISO(ahora)],
+        anio: [aISO(new Date(ahora.getFullYear(), 0, 1)), aISO(new Date(ahora.getFullYear(), 11, 31))],
+      };
+      const [d, h] = rangos[boton.dataset.rango];
+      boton.classList.toggle('activo', filtroDesde.value === d && filtroHasta.value === h);
+    });
+  }
+
+
+  /* ===================================================
+     6. MENSAJES EMERGENTES (toast) - se ocultan solos
      =================================================== */
   const toast = document.querySelector('.toast');
 

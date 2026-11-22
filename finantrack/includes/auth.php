@@ -2,6 +2,9 @@
 // includes/auth.php
 // Manejo de sesiones, roles y mensajes. Se incluye al inicio de cada página.
 
+// Zona horaria para date() (fechas de transacciones, "hoy", etc.)
+date_default_timezone_set('America/Mexico_City');
+
 if (session_status() === PHP_SESSION_NONE) {
     // La cookie de sesión no es accesible desde JavaScript (httponly)
     session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax']);

@@ -695,3 +695,211 @@ body {
     width: 100%;
   }
 }
+
+/* ===================================================
+   8. MÓDULO DE TRANSACCIONES
+   =================================================== */
+.botones-encabezado {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-ingreso { background-color: var(--color-exito); }
+.btn-ingreso:hover { background-color: #15803d; }
+.btn-gasto { background-color: #ea580c; }
+.btn-gasto:hover { background-color: #c2410c; }
+
+/* Tarjetas de resumen: 1 col móvil, 2 tablet, 4 escritorio */
+.tarjetas-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.tarjeta-resumen {
+  background-color: var(--color-tarjeta);
+  border-radius: 8px;
+  padding: 18px;
+  border-top: 4px solid var(--color-primario);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.tarjeta-resumen span {
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.tarjeta-resumen strong {
+  font-size: 1.5rem;
+  color: var(--color-secundario);
+}
+
+.resumen-ingreso { border-top-color: var(--color-exito); }
+.resumen-ingreso strong { color: var(--color-exito); }
+.resumen-gasto { border-top-color: #ea580c; }
+.resumen-gasto strong { color: #ea580c; }
+.resumen-balance { border-top-color: var(--color-primario); }
+.resumen-saldo { border-top-color: var(--color-secundario); }
+.resumen-negativo { border-top-color: var(--color-alerta); }
+.resumen-negativo strong { color: var(--color-alerta); }
+
+/* Filtros */
+.form-filtros {
+  background-color: var(--color-tarjeta);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.rangos-rapidos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.campos-filtro {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.campos-filtro .campo-grupo {
+  margin-bottom: 0;
+}
+
+.acciones-filtro {
+  display: flex;
+  gap: 8px;
+}
+
+.acciones-filtro .btn-primario,
+.acciones-filtro .btn-secundario {
+  padding: 10px 16px;
+  text-decoration: none;
+  text-align: center;
+}
+
+.contador-resultados {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+/* Tabla de movimientos */
+.tabla-transacciones {
+  min-width: 720px;
+}
+
+.col-monto {
+  text-align: right !important;
+  white-space: nowrap;
+  font-weight: bold;
+}
+
+.monto-ingreso { color: var(--color-exito); }
+.monto-gasto { color: #ea580c; }
+
+.col-acciones {
+  white-space: nowrap;
+  text-align: center !important;
+}
+
+.col-acciones form {
+  display: inline;
+}
+
+.col-notas {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+}
+
+.texto-tenue {
+  color: #94a3b8;
+}
+
+.chip-categoria {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-cat);
+  background-color: color-mix(in srgb, var(--color-cat) 12%, white);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Selector de tipo en el modal */
+.selector-tipo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.selector-tipo input {
+  position: absolute;
+  opacity: 0;
+}
+
+.selector-tipo span {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.selector-tipo input[value="gasto"]:checked + span {
+  border-color: #ea580c;
+  background-color: #ffedd5;
+  color: #9a3412;
+}
+
+.selector-tipo input[value="ingreso"]:checked + span {
+  border-color: var(--color-exito);
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.selector-tipo input:focus-visible + span {
+  outline: 2px solid var(--color-primario);
+}
+
+.modal[data-tipo="ingreso"] .form-modal { border-top: 5px solid var(--color-exito); }
+.modal[data-tipo="gasto"] .form-modal { border-top: 5px solid #ea580c; }
+
+.campo-grupo textarea {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.campo-grupo textarea:focus {
+  outline: none;
+  border-color: var(--color-primario);
+}
+
+.contador-caracteres {
+  align-self: flex-end;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+@media screen and (max-width: 600px) {
+  .botones-encabezado {
+    width: 100%;
+  }
+
+  .botones-encabezado .btn-primario {
+    flex: 1;
+  }
+}

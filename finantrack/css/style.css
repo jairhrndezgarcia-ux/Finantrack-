@@ -1356,3 +1356,78 @@ a.btn-secundario {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ===================================================
+   10. ADMINISTRACIÓN
+   =================================================== */
+.grid-admin {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columnas en escritorio */
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.tarjeta-admin {
+  display: block;
+  background-color: var(--color-tarjeta);
+  border-radius: 8px;
+  padding: 22px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--color-texto);
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta-admin:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.tarjeta-admin h3 {
+  color: var(--color-secundario);
+}
+
+.enlace-admin {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--color-primario);
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.tabla-catalogo {
+  min-width: 520px;
+}
+
+.fila-inactiva td {
+  color: #94a3b8;
+}
+
+.nota-tabla {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.btn-icono:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.campo-mayusculas {
+  text-transform: uppercase;
+}
+
+#tabla-usuarios {
+  min-width: 900px;
+}
+
+/* Tarjetas del admin: 2 columnas en tablet, 1 en móvil */
+@media screen and (max-width: 900px) {
+  .grid-admin { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media screen and (max-width: 500px) {
+  .grid-admin { grid-template-columns: 1fr; }
+}

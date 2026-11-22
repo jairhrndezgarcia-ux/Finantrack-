@@ -24,13 +24,19 @@ $mensajeFlash = flash();
     <nav class="nav-principal">
       <?php if (usuario_autenticado()): ?>
         <span class="nav-usuario">Hola, <?= e($_SESSION['usuario_nombre']) ?></span>
-        <a href="<?= $base . ruta_inicio() ?>"><?= es_admin() ? 'Panel de administración' : 'Mi panel' ?></a>
-        <?php if (!es_admin()): ?>
+        <?php if (es_admin()): ?>
+          <a href="<?= $base ?>admin/index.php">Panel</a>
+          <a href="<?= $base ?>admin/usuarios.php">Usuarios</a>
+          <a href="<?= $base ?>admin/categorias.php">Categorías</a>
+          <a href="<?= $base ?>admin/metodos.php">Métodos de pago</a>
+          <a href="<?= $base ?>admin/divisas.php">Divisas</a>
+        <?php else: ?>
+          <a href="<?= $base ?>dashboard.php">Mi panel</a>
           <a href="<?= $base ?>transacciones.php">Transacciones</a>
           <a href="<?= $base ?>presupuestos.php">Presupuestos</a>
           <a href="<?= $base ?>metas.php">Metas</a>
+          <a href="<?= $base ?>categorias.php">Categorías</a>
         <?php endif; ?>
-        <a href="<?= $base . (es_admin() ? 'admin/categorias.php' : 'categorias.php') ?>">Categorías</a>
         <a href="<?= $base ?>logout.php" class="btn-nav">Cerrar sesión</a>
       <?php else: ?>
         <a href="<?= $base ?>index.php#funciones">Funcionalidades</a>

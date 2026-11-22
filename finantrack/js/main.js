@@ -818,7 +818,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ===================================================
-     10. MENSAJES EMERGENTES (toast) - se ocultan solos
+     10. ADMINISTRACIÓN: catálogos y usuarios
+     =================================================== */
+
+  // Modal genérico: el botón trae en data-valores (JSON) los datos a precargar
+  document.querySelectorAll('.btn-abrir-modal').forEach((boton) => {
+    boton.addEventListener('click', () => {
+      const modal = document.getElementById(boton.dataset.modal);
+      const form = modal.querySelector('form');
+      const valores = JSON.parse(boton.dataset.valores || '{}');
+
+      form.reset();
+      form.elements.accion.value = boton.dataset.accion;
+      modal.querySelector('.titulo-modal').textContent = boton.dataset.titulo;
+      Object.entries(valores).forEach(([campo, valor]) => {
+        if (form.elements[campo]) form.elements[campo].value = valor;
+      });
+
+      form.dispatchEvent(new Event('input')); // refresca vistas previas
+      modal.showModal();
+      const primerCampo = form.querySelector('input:not([type="hidden"])');
+      if (primerCampo) primerCampo.focus();
+    });
+  });
+
+  // Divisas: código siempre en mayúsculas y ejemplo del formato en vivo
+  const campoCodigo = document.getElementById('divisa-codigo');
+  if (campoCodigo) {
+    const campoSimbolo = document.getElementById('divisa-simbolo');
+    const ejemplo = document.getElementById('divisa-ejemplo');
+    const formDivisa = campoCodigo.form;
+
+    formDivisa.addEventListener('input', () => {
+      campoCodigo.value = campoCodigo.value.toUpperCase().replace(/[^A-Z]/g, '');
+      ejemplo.textContent = `${campoSimbolo.value || '$'}1,234.50 ${campoCodigo.value}`;
+    });
+  }
+
+  // Usuarios: filtro por estado y búsqueda por nombre o correo
+  const tablaUsuarios = document.getElementById('tabla-usuarios');
+  if (tablaUsuarios) {
+    const filas = tablaUsuarios.querySelectorAll('tbody tr[data-estado]');
+    const filaVacia = document.getElementById('fila-sin-usuarios');
+    const buscarUsuario = document.getElementById('buscar-usuario');
+    const botonesEstado = document.querySelectorAll('[data-filtro-estado]');
+    let estadoActual = 'todos';
+
+    function filtrarUsuarios() {
+      const texto = buscarUsuario.value.trim().toLowerCase();
+      let visibles = 0;
+      filas.forEach((fila) => {
+        const mostrar = (estadoActual === 'todos' || fila.dataset.estado === estadoActual)
+          && fila.dataset.busqueda.includes(texto);
+        fila.classList.toggle('oculto', !mostrar);
+        if (mostrar) visibles++;
+      });
+      filaVacia.classList.toggle('oculto', visibles > 0);
+    }
+
+    botonesEstado.forEach((boton) => {
+      boton.addEventListener('click', () => {
+        botonesEstado.forEach((b) => b.classList.remove('activo'));
+        boton.classList.add('activo');
+        estadoActual = boton.dataset.filtroEstado;
+        filtrarUsuarios();
+      });
+    });
+    buscarUsuario.addEventListener('input', filtrarUsuarios);
+  }
+
+
+  /* ===================================================
+     11. MENSAJES EMERGENTES (toast) - se ocultan solos
      =================================================== */
   const toast = document.querySelector('.toast');
 

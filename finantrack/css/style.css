@@ -1329,9 +1329,12 @@ a.btn-secundario {
   border-bottom: none;
 }
 
+/* En pantallas medianas el enlace al perfil se acorta: solo el ícono 👤 */
 @media screen and (max-width: 900px) {
-  .nav-usuario {
-    display: none;
+  .nav-principal a.nav-usuario {
+    max-width: 2.2em;
+    overflow: hidden;
+    white-space: nowrap;
   }
 }
 
@@ -1430,4 +1433,157 @@ a.btn-secundario {
 
 @media screen and (max-width: 500px) {
   .grid-admin { grid-template-columns: 1fr; }
+}
+
+/* ===================================================
+   11. PERFIL DE USUARIO
+   =================================================== */
+.nav-principal a.nav-usuario {
+  color: #cbd5e1;
+  font-weight: normal;
+}
+
+.nav-principal a.nav-usuario:hover {
+  color: #ffffff;
+}
+
+.grid-perfil {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.tarjeta-perfil {
+  text-align: center;
+}
+
+.avatar {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primario), var(--color-secundario));
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tarjeta-perfil h3 {
+  margin-bottom: 2px;
+  overflow-wrap: anywhere;
+}
+
+.tarjeta-perfil > .texto-tenue {
+  overflow-wrap: anywhere;
+  margin-bottom: 8px;
+}
+
+.datos-perfil {
+  list-style: none;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.datos-perfil li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.datos-perfil span {
+  color: #64748b;
+}
+
+.columna-formularios {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.acciones-formulario {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.confirmar-correo {
+  background-color: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+/* Campo de contraseña con botón para mostrarla */
+.campo-password {
+  position: relative;
+  display: flex;
+}
+
+.campo-password input {
+  flex: 1;
+  padding-right: 44px !important;
+}
+
+.btn-ver-password {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+/* Medidor de seguridad de la contraseña */
+.medidor-password {
+  margin-top: 8px;
+}
+
+.medidor-barra {
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.medidor-relleno {
+  width: 0;
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.medidor-texto {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.nivel-1 .medidor-relleno { background-color: var(--color-alerta); }
+.nivel-2 .medidor-relleno { background-color: #f97316; }
+.nivel-3 .medidor-relleno { background-color: #eab308; }
+.nivel-4 .medidor-relleno { background-color: #22c55e; }
+.nivel-5 .medidor-relleno { background-color: var(--color-exito); }
+.nivel-1 .medidor-texto { color: var(--color-alerta); }
+.nivel-4 .medidor-texto,
+.nivel-5 .medidor-texto { color: var(--color-exito); font-weight: bold; }
+
+.texto-coincidencia {
+  font-size: 0.8rem;
+  margin-top: 6px;
+  min-height: 1em;
+}
+
+@media screen and (max-width: 900px) {
+  .grid-perfil {
+    grid-template-columns: 1fr;
+  }
 }

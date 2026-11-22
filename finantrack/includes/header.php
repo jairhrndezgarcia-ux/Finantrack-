@@ -23,7 +23,7 @@ $mensajeFlash = flash();
     </div>
     <nav class="nav-principal">
       <?php if (usuario_autenticado()): ?>
-        <span class="nav-usuario">Hola, <?= e($_SESSION['usuario_nombre']) ?></span>
+        <a href="<?= $base ?>perfil.php" class="nav-usuario" title="Mi perfil">👤 <?= e($_SESSION['usuario_nombre']) ?></a>
         <?php if (es_admin()): ?>
           <a href="<?= $base ?>admin/index.php">Panel</a>
           <a href="<?= $base ?>admin/usuarios.php">Usuarios</a>

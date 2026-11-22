@@ -889,7 +889,148 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ===================================================
-     11. MENSAJES EMERGENTES (toast) - se ocultan solos
+     11. PERFIL DE USUARIO (perfil.php)
+     =================================================== */
+  const formDatos = document.getElementById('form-datos');
+
+  if (formDatos) {
+    const campoCorreoP = document.getElementById('perfil-correo');
+    const campoDivisaP = document.getElementById('perfil-divisa');
+    const grupoConfirmar = document.getElementById('grupo-confirmar-correo');
+    const campoConfirmarCorreo = document.getElementById('perfil-password-confirmacion');
+    const notaDivisa = document.getElementById('nota-divisa');
+    const btnGuardarDatos = document.getElementById('btn-guardar-datos');
+    const errorDatos = document.getElementById('error-datos');
+    const camposDatos = formDatos.querySelectorAll('input[type="text"], input[type="email"], select');
+    const patronCorreoP = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // ¿Algún campo es distinto a su valor original? Solo entonces se puede guardar
+    function revisarCambios() {
+      const hayCambios = [...camposDatos].some((campo) => (campo.tagName === 'SELECT'
+        ? campo.value !== campo.dataset.original
+        : campo.value.trim() !== campo.defaultValue));
+
+      const correoCambio = campoCorreoP.value.trim().toLowerCase() !== campoCorreoP.dataset.original;
+      grupoConfirmar.classList.toggle('oculto', !correoCambio);
+      notaDivisa.classList.toggle('oculto', campoDivisaP.value === campoDivisaP.dataset.original);
+      btnGuardarDatos.disabled = !hayCambios;
+      errorDatos.textContent = '';
+    }
+
+    formDatos.addEventListener('input', revisarCambios);
+    formDatos.addEventListener('change', revisarCambios);
+    // "Descartar cambios": el reset ocurre después del evento, por eso la pequeña espera
+    formDatos.addEventListener('reset', () => setTimeout(revisarCambios, 0));
+
+    formDatos.addEventListener('submit', (event) => {
+      let mensaje = '';
+      const nombre = document.getElementById('perfil-nombre').value.trim();
+      const apellidos = document.getElementById('perfil-apellidos').value.trim();
+
+      if (!nombre || !apellidos) {
+        mensaje = 'El nombre y los apellidos son obligatorios.';
+      } else if (!patronCorreoP.test(campoCorreoP.value.trim())) {
+        mensaje = 'Escribe un correo electrónico válido.';
+      } else if (!grupoConfirmar.classList.contains('oculto') && !campoConfirmarCorreo.value) {
+        mensaje = 'Escribe tu contraseña actual para cambiar el correo.';
+      }
+
+      if (mensaje) {
+        event.preventDefault();
+        errorDatos.textContent = mensaje;
+      }
+    });
+  }
+
+  const formPassword = document.getElementById('form-password');
+
+  if (formPassword) {
+    const campoActual = document.getElementById('password-actual');
+    const campoNueva = document.getElementById('password-nueva');
+    const campoConfirmarP = document.getElementById('password-confirmar');
+    const medidor = document.getElementById('medidor-password');
+    const textoMedidor = medidor.querySelector('.medidor-texto');
+    const rellenoMedidor = medidor.querySelector('.medidor-relleno');
+    const textoCoincidencia = document.getElementById('coincidencia-password');
+    const errorPass = document.getElementById('error-password-perfil');
+
+    // Medidor de seguridad: suma puntos por longitud y variedad de caracteres
+    const niveles = [
+      { texto: 'Mínimo 6 caracteres', clase: 'nivel-0' },
+      { texto: 'Muy débil', clase: 'nivel-1' },
+      { texto: 'Débil', clase: 'nivel-2' },
+      { texto: 'Aceptable', clase: 'nivel-3' },
+      { texto: 'Fuerte', clase: 'nivel-4' },
+      { texto: 'Muy fuerte', clase: 'nivel-5' },
+    ];
+
+    function puntajePassword(password) {
+      if (password.length < 6) return 0;
+      let puntos = 1;
+      if (password.length >= 10) puntos++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) puntos++;
+      if (/\d/.test(password)) puntos++;
+      if (/[^A-Za-z0-9]/.test(password)) puntos++;
+      return puntos;
+    }
+
+    function actualizarMedidor() {
+      const puntos = campoNueva.value ? puntajePassword(campoNueva.value) : 0;
+      const nivel = niveles[puntos];
+      medidor.className = `medidor-password ${nivel.clase}`;
+      rellenoMedidor.style.width = `${(puntos / 5) * 100}%`;
+      textoMedidor.textContent = campoNueva.value ? nivel.texto : niveles[0].texto;
+    }
+
+    function actualizarCoincidencia() {
+      if (!campoConfirmarP.value) {
+        textoCoincidencia.textContent = '';
+        return;
+      }
+      const coinciden = campoNueva.value === campoConfirmarP.value;
+      textoCoincidencia.textContent = coinciden ? '✔ Las contraseñas coinciden' : '✖ Las contraseñas no coinciden';
+      textoCoincidencia.className = `texto-coincidencia ${coinciden ? 'texto-exito' : 'texto-alerta'}`;
+    }
+
+    campoNueva.addEventListener('input', () => {
+      actualizarMedidor();
+      actualizarCoincidencia();
+    });
+    campoConfirmarP.addEventListener('input', actualizarCoincidencia);
+
+    // Botones para mostrar u ocultar la contraseña
+    formPassword.querySelectorAll('.btn-ver-password').forEach((boton) => {
+      boton.addEventListener('click', () => {
+        const campo = document.getElementById(boton.dataset.ver);
+        const mostrar = campo.type === 'password';
+        campo.type = mostrar ? 'text' : 'password';
+        boton.textContent = mostrar ? '🙈' : '👁️';
+        boton.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      });
+    });
+
+    formPassword.addEventListener('submit', (event) => {
+      let mensaje = '';
+      if (!campoActual.value) {
+        mensaje = 'Escribe tu contraseña actual.';
+      } else if (campoNueva.value.length < 6) {
+        mensaje = 'La nueva contraseña debe tener al menos 6 caracteres.';
+      } else if (campoNueva.value !== campoConfirmarP.value) {
+        mensaje = 'La nueva contraseña y su confirmación no coinciden.';
+      } else if (campoNueva.value === campoActual.value) {
+        mensaje = 'La nueva contraseña debe ser diferente a la actual.';
+      }
+
+      if (mensaje) {
+        event.preventDefault();
+        errorPass.textContent = mensaje;
+      }
+    });
+  }
+
+
+  /* ===================================================
+     12. MENSAJES EMERGENTES (toast) - se ocultan solos
      =================================================== */
   const toast = document.querySelector('.toast');
 

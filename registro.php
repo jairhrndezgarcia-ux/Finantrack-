@@ -1,79 +1,95 @@
 <?php
-// 1. Iniciar el manejo de sesiones 
-session_start();
+// registro.php - Alta de nuevos usuarios (Módulo 2)
 
-// 2. Incluir el archivo de conexión a MySQL 
+session_start();
 require_once 'config/conexion.php';
 
-// 3. Verificar que los datos hayan sido enviados por el método POST 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-    // Capturar la información enviada por el formulario HTML
-    $nombre    = $_POST['nombre'];
-    $apellidos = $_POST['apellidos'];
-    $correo    = $_POST['correo'];
-    $divisa    = $_POST['divisa'];
-    $password  = $_POST['password'];
-    $confirmar = $_POST['confirmar_password'];
+/**
+ * Muestra un mensaje con alert() y redirige.
+ * json_encode escapa comillas y etiquetas, así un nombre con caracteres
+ * especiales no puede romper ni inyectar código en el <script> (XSS).
+ */
+function responder(string $mensaje, string $destino): void
+{
+    $flags = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE;
+    echo '<script>alert(' . json_encode($mensaje, $flags) . ');'
+       . 'window.location.href = ' . json_encode($destino, $flags) . ';</script>';
+    exit();
+}
 
-    // Validar en el servidor que las contraseñas coincidan
-    if ($password !== $confirmar) {
-        echo "<script>
-                alert('Error: Las contraseñas no coinciden.');
-                window.location.href = 'index.html#registro';
-              </script>";
-        exit();
-    }
-
-    // 4. Verificar si el correo ya existe en la base de datos 
-    $consulta_existe = "SELECT COUNT(*) as total FROM usuarios WHERE correo = '$correo'";
-    $query_existe    = mysqli_query($conexion, $consulta_existe);
-    $resultado       = mysqli_fetch_array($query_existe);
-
-    if ($resultado['total'] > 0) {
-        echo "<script>
-                alert('El correo electrónico ya está registrado. Intenta con otro.');
-                window.location.href = 'index.html#registro';
-              </script>";
-        exit();
-    }
-
-    // 5. Preparar la sentencia de inserción 
-    // El rol_id = 2 corresponde al 'Cliente / Usuario Registrado' de la propuesta
-    $insert = "INSERT INTO usuarios (nombre, apellidos, correo, password, divisa_base, rol_id) 
-               VALUES ('$nombre', '$apellidos', '$correo', '$password', '$divisa', 2)";
-
-    // 6. Ejecutar la inserción dentro de un bloque try & catch
-    try {
-        $query_insert = mysqli_query($conexion, $insert);
-
-        if ($query_insert) {
-            // Guardar datos en la sesión activa 
-            $_SESSION['usuario_nombre'] = $nombre;
-            $_SESSION['usuario_correo'] = $correo;
-            $_SESSION['rol_id']         = 2; // Cliente
-
-            echo "<script>
-                    alert('¡Registro exitoso! Bienvenido a FinanTrack, $nombre.');
-                    window.location.href = 'index.html';
-                  </script>";
-        } else {
-            echo "<script>
-                    alert('Ocurrió un error al registrar la cuenta.');
-                    window.location.href = 'index.html#registro';
-                  </script>";
-        }
-    } catch (Exception $e) {
-        // Capturar error si la inserción falla 
-        echo "<script>
-                alert('Error en el servidor: " . $e->getMessage() . "');
-                window.location.href = 'index.html#registro';
-              </script>";
-    }
-
-} else {
-    // Si intentan entrar directamente a registro.php por la URL, redirigir al inicio
+// Si entran directo por la URL (GET), regresar al inicio
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: index.html');
     exit();
 }
-?>
+
+// 1. Capturar y limpiar los datos del formulario
+$nombre    = trim($_POST['nombre'] ?? '');
+$apellidos = trim($_POST['apellidos'] ?? '');
+$correo    = strtolower(trim($_POST['correo'] ?? ''));
+$divisa    = $_POST['divisa'] ?? '';
+$password  = $_POST['password'] ?? '';
+$confirmar = $_POST['confirmar_password'] ?? '';
+
+$volver = 'index.html#registro';
+
+// 2. Validaciones del lado del servidor (la validación de JS se puede saltar)
+if ($nombre === '' || $apellidos === '' || $correo === '' || $divisa === '' || $password === '') {
+    responder('Todos los campos son obligatorios.', $volver);
+}
+if (mb_strlen($nombre) > 60 || mb_strlen($apellidos) > 80) {
+    responder('El nombre o los apellidos son demasiado largos.', $volver);
+}
+if (!filter_var($correo, FILTER_VALIDATE_EMAIL) || strlen($correo) > 120) {
+    responder('El correo electrónico no es válido.', $volver);
+}
+if (strlen($password) < 6) {
+    responder('La contraseña debe tener al menos 6 caracteres.', $volver);
+}
+if ($password !== $confirmar) {
+    responder('Las contraseñas no coinciden.', $volver);
+}
+
+try {
+    // 3. Obtener el id de la divisa elegida (solo divisas activas del catálogo)
+    $stmt = mysqli_prepare($conexion, 'SELECT id FROM divisas WHERE codigo = ? AND activo = 1');
+    mysqli_stmt_bind_param($stmt, 's', $divisa);
+    mysqli_stmt_execute($stmt);
+    $filaDivisa = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    if (!$filaDivisa) {
+        responder('La divisa seleccionada no es válida.', $volver);
+    }
+    $divisaId = (int) $filaDivisa['id'];
+
+    // 4. Verificar que el correo no esté registrado (consulta preparada = sin inyección SQL)
+    $stmt = mysqli_prepare($conexion, 'SELECT id FROM usuarios WHERE correo = ?');
+    mysqli_stmt_bind_param($stmt, 's', $correo);
+    mysqli_stmt_execute($stmt);
+    if (mysqli_fetch_assoc(mysqli_stmt_get_result($stmt))) {
+        responder('El correo electrónico ya está registrado. Intenta con otro.', $volver);
+    }
+
+    // 5. Insertar el usuario con la contraseña cifrada (rol 2 = Usuario registrado)
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+    $stmt = mysqli_prepare(
+        $conexion,
+        'INSERT INTO usuarios (nombre, apellidos, correo, password_hash, divisa_id, rol_id)
+         VALUES (?, ?, ?, ?, ?, 2)'
+    );
+    mysqli_stmt_bind_param($stmt, 'ssssi', $nombre, $apellidos, $correo, $hash, $divisaId);
+    mysqli_stmt_execute($stmt);
+
+    // 6. Iniciar la sesión del nuevo usuario
+    session_regenerate_id(true);
+    $_SESSION['usuario_id']     = mysqli_insert_id($conexion);
+    $_SESSION['usuario_nombre'] = $nombre;
+    $_SESSION['usuario_correo'] = $correo;
+    $_SESSION['rol_id']         = 2;
+
+    responder("¡Registro exitoso! Bienvenido a FinanTrack, $nombre.", 'index.html');
+
+} catch (mysqli_sql_exception $e) {
+    // El detalle técnico va al log, no al navegador
+    error_log('Error en registro: ' . $e->getMessage());
+    responder('Ocurrió un error al registrar la cuenta. Intenta más tarde.', $volver);
+}

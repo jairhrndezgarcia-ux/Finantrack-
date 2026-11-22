@@ -6,9 +6,15 @@ $user = "root";
 $pass = "";
 $bd   = "finantrack";
 
-$conexion = mysqli_connect($host, $user, $pass, $bd);
+// Hacer que mysqli lance excepciones ante cualquier error de SQL
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-if (!$conexion) {
-    die("Error al conectar a la base de datos: " . mysqli_connect_error());
+try {
+    $conexion = mysqli_connect($host, $user, $pass, $bd);
+    // utf8mb4 para guardar correctamente acentos, ñ y emojis (íconos de categorías)
+    mysqli_set_charset($conexion, 'utf8mb4');
+} catch (mysqli_sql_exception $e) {
+    // No mostrar el detalle técnico al usuario; queda en el log de PHP
+    error_log('Error de conexión a la BD: ' . $e->getMessage());
+    die('Error al conectar con la base de datos. Intenta más tarde.');
 }
-?>

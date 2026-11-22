@@ -274,3 +274,151 @@ body {
     flex: 1;
   }
 }
+/* ===================================================
+   6. SESIÓN, MENSAJES Y PANELES
+   =================================================== */
+.logo a {
+  text-decoration: none;
+}
+
+.nav-usuario {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.seccion-login {
+  min-height: 70vh;
+}
+
+.texto-enlace {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 0.95rem;
+}
+
+.texto-enlace a {
+  color: var(--color-primario);
+  font-weight: bold;
+}
+
+/* Error dentro de un formulario */
+.alerta {
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.alerta-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid var(--color-alerta);
+}
+
+/* Mensaje emergente (flash) */
+.toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  max-width: 360px;
+  padding: 14px 18px;
+  border-radius: 6px;
+  color: #ffffff;
+  font-weight: bold;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  z-index: 200;
+  cursor: pointer;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.toast-exito { background-color: var(--color-exito); }
+.toast-error { background-color: var(--color-alerta); }
+.toast-info  { background-color: var(--color-primario); }
+
+.toast-saliendo {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Etiqueta para módulos aún no disponibles */
+.etiqueta-pronto {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #e2e8f0;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* Tablas (panel de administración) */
+.subtitulo-tabla {
+  margin: 40px 0 15px;
+  color: var(--color-secundario);
+}
+
+.tabla-contenedor {
+  overflow-x: auto; /* en móvil la tabla se desplaza horizontalmente */
+  background-color: var(--color-tarjeta);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+
+.tabla th,
+.tabla td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tabla th {
+  background-color: var(--color-secundario);
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.tabla tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+.tabla-vacia {
+  text-align: center !important;
+  color: #64748b;
+}
+
+.estado {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.estado-activo   { background-color: #dcfce7; color: #166534; }
+.estado-inactivo { background-color: #fee2e2; color: #991b1b; }
+
+/* Navegación en pantallas pequeñas */
+@media screen and (max-width: 700px) {
+  .header-principal {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-principal {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .toast {
+    left: 20px;
+    right: 20px;
+    max-width: none;
+  }
+}

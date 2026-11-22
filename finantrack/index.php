@@ -1,27 +1,14 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <!-- Viewport obligatorio para que las Media Queries funcionen en dispositivos móviles -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanTrack - Gestor Web de Finanzas Personales</title>
-  <!-- Enlace a la hoja de estilos externa -->
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+<?php
+// index.php - Página principal (Módulo 1: Home y Presentación)
+require_once 'includes/auth.php';
+require_once 'config/conexion.php';
 
-  <!-- Encabezado y Navegación Principal -->
-  <header class="header-principal">
-    <div class="logo">
-      <h1>Finan<span>Track</span></h1>
-    </div>
-    <nav class="nav-principal">
-      <a href="#inicio">Inicio</a>
-      <a href="#funciones">Funcionalidades</a>
-      <a href="#calculadora">Calculadora</a>
-      <a href="#registro" class="btn-nav">Registrarse</a>
-    </nav>
-  </header>
+// Divisas activas para el formulario de registro (catálogo administrado por el admin)
+$divisas = mysqli_query($conexion, 'SELECT codigo, nombre FROM divisas WHERE activo = 1 ORDER BY id');
+
+$titulo = 'Gestor Web de Finanzas Personales';
+require 'includes/header.php';
+?>
 
   <main>
     <!-- Sección de Bienvenida (Hero Section) -->
@@ -29,7 +16,11 @@
       <div class="hero-contenido">
         <h2>Toma el control total de tus Finanzas Personales</h2>
         <p>Administra tus presupuestos mensuales, clasifica ingresos y gastos, y alcanza tus metas de ahorro fácilmente.</p>
-        <a href="#registro" class="btn-primario">Comenzar Ahora</a>
+        <?php if (usuario_autenticado()): ?>
+          <a href="<?= ruta_inicio() ?>" class="btn-primario">Ir a mi panel</a>
+        <?php else: ?>
+          <a href="#registro" class="btn-primario">Comenzar Ahora</a>
+        <?php endif; ?>
       </div>
     </section>
 
@@ -61,7 +52,7 @@
     <section id="calculadora" class="seccion-padding bg-alt">
       <h2 class="titulo-seccion">Calculadora Interactiva de Ahorro</h2>
       <p class="subtitulo-seccion">Estima tu capacidad de ahorro mensual antes de registrarte.</p>
-      
+
       <div class="contenedor-calculadora">
         <form id="form-calculadora" class="form-estilizado" onsubmit="event.preventDefault();">
           <div class="campo-grupo">
@@ -85,33 +76,36 @@
       </div>
     </section>
 
+    <?php if (!usuario_autenticado()): ?>
     <!-- Formulario de Registro Validado en Tiempo Real (Módulo 2) -->
     <section id="registro" class="seccion-padding">
       <h2 class="titulo-seccion">Crea tu Cuenta Gratis</h2>
-      
+
       <div class="contenedor-formulario">
         <form id="form-registro" class="form-estilizado" action="registro.php" method="POST">
           <div class="campo-grupo">
             <label for="reg-nombre">Nombre(s):</label>
-            <input type="text" id="reg-nombre" name="nombre" placeholder="Tu nombre" required>
+            <input type="text" id="reg-nombre" name="nombre" placeholder="Tu nombre" maxlength="60" required>
           </div>
 
           <div class="campo-grupo">
             <label for="reg-apellidos">Apellidos:</label>
-            <input type="text" id="reg-apellidos" name="apellidos" placeholder="Tus apellidos" required>
+            <input type="text" id="reg-apellidos" name="apellidos" placeholder="Tus apellidos" maxlength="80" required>
           </div>
 
           <div class="campo-grupo">
             <label for="reg-correo">Correo Electrónico:</label>
-            <input type="email" id="reg-correo" name="correo" placeholder="correo@ejemplo.com" required>
+            <input type="email" id="reg-correo" name="correo" placeholder="correo@ejemplo.com" maxlength="120" required>
           </div>
 
           <div class="campo-grupo">
             <label for="reg-divisa">Divisa Base:</label>
             <select id="reg-divisa" name="divisa" required>
-              <option value="MXN">Peso Mexicano (MXN)</option>
-              <option value="USD">Dólar Estadounidense (USD)</option>
-              <option value="EUR">Euro (EUR)</option>
+              <?php while ($divisa = mysqli_fetch_assoc($divisas)): ?>
+                <option value="<?= e($divisa['codigo']) ?>">
+                  <?= e($divisa['nombre']) ?> (<?= e($divisa['codigo']) ?>)
+                </option>
+              <?php endwhile; ?>
             </select>
           </div>
 
@@ -127,17 +121,11 @@
           </div>
 
           <button type="submit" class="btn-primario btn-bloque">Registrar Cuenta</button>
+          <p class="texto-enlace">¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a></p>
         </form>
       </div>
     </section>
+    <?php endif; ?>
   </main>
 
-  <!-- Pie de Página Semántico -->
-  <footer class="footer-principal">
-    <p>&copy; 2026 FinanTrack - Proyecto de Fundamentos de Desarrollo Web (UASLP)</p>
-  </footer>
-
-  <!-- Script de JavaScript Vanilla -->
-  <script src="js/main.js"></script>
-</body>
-</html>
+<?php require 'includes/footer.php'; ?>

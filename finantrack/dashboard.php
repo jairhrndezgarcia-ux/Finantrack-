@@ -109,7 +109,7 @@ require 'includes/header.php';
       <section class="panel-tarjeta">
         <div class="panel-encabezado">
           <h3>Presupuestos</h3>
-          <a href="presupuestos.php">Ver todos →</a>
+          <a href="presupuestos.php">Ver todos</a>
         </div>
         <?php if ($presupuestos): ?>
           <?php foreach (array_slice($presupuestos, 0, 5) as $p): ?>
@@ -130,7 +130,7 @@ require 'includes/header.php';
       <section class="panel-tarjeta">
         <div class="panel-encabezado">
           <h3>Metas de ahorro</h3>
-          <a href="metas.php">Ver todas →</a>
+          <a href="metas.php">Ver todas</a>
         </div>
         <?php if ($metas): ?>
           <?php foreach ($metas as $m): ?>
@@ -152,7 +152,7 @@ require 'includes/header.php';
     <section class="panel-tarjeta">
       <div class="panel-encabezado">
         <h3>Últimos movimientos</h3>
-        <a href="transacciones.php">Ver todos →</a>
+        <a href="transacciones.php">Ver todos</a>
       </div>
       <?php if ($movimientos): ?>
         <ul class="lista-movimientos">

@@ -49,7 +49,7 @@ require 'includes/header.php';
           <span>Suma de objetivos</span>
           <strong><?= dinero($totalObjetivo, $simbolo) ?></strong>
         </article>
-        <article class="tarjeta-resumen resumen-saldo">
+        <article class="tarjeta-resumen">
           <span>Metas completadas</span>
           <strong><?= $completadas ?> de <?= count($metas) ?></strong>
         </article>

@@ -4,6 +4,47 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ===================================================
+     0. MENÚ HAMBURGUESA
+     Con sesión abre la barra lateral como cajón; sin sesión
+     despliega el menú de la barra superior.
+     =================================================== */
+  const btnMenu = document.getElementById('btn-abrir-menu');
+
+  if (btnMenu) {
+    const panel = document.getElementById(btnMenu.getAttribute('aria-controls'));
+    const fondoMenu = document.getElementById('fondo-menu');
+
+    function abrirMenu(abrir) {
+      panel.classList.toggle('abierto', abrir);
+      btnMenu.setAttribute('aria-expanded', String(abrir));
+      btnMenu.setAttribute('aria-label', abrir ? 'Cerrar menú' : 'Abrir menú');
+      if (fondoMenu) fondoMenu.hidden = !abrir;
+      // Con el cajón abierto no se desplaza la página de fondo
+      document.body.style.overflow = abrir && fondoMenu ? 'hidden' : '';
+    }
+
+    btnMenu.addEventListener('click', () => abrirMenu(!panel.classList.contains('abierto')));
+    if (fondoMenu) fondoMenu.addEventListener('click', () => abrirMenu(false));
+
+    // Cerrar con Escape o al elegir un enlace
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && panel.classList.contains('abierto')) {
+        abrirMenu(false);
+        btnMenu.focus();
+      }
+    });
+    panel.querySelectorAll('a').forEach((enlace) => {
+      enlace.addEventListener('click', () => abrirMenu(false));
+    });
+
+    // Si la pantalla crece y el menú ya no es cajón, se limpia el estado
+    window.matchMedia('(min-width: 901px)').addEventListener('change', (evento) => {
+      if (evento.matches) abrirMenu(false);
+    });
+  }
+
+
+  /* ===================================================
      1. CALCULADORA INTERACTIVA DE AHORRO (index.php)
      =================================================== */
   const btnCalcular = document.getElementById('btn-calcular');

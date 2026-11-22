@@ -57,35 +57,45 @@ $titulo = 'Iniciar sesión';
 require 'includes/header.php';
 ?>
 
-  <main>
-    <section class="seccion-padding seccion-login">
-      <h2 class="titulo-seccion">Iniciar sesión</h2>
-      <p class="subtitulo-seccion">Accede para administrar tus finanzas.</p>
-
-      <div class="contenedor-formulario">
-        <form id="form-login" class="form-estilizado" action="login.php" method="POST" novalidate>
-          <?php if ($error): ?>
-            <p class="alerta alerta-error" role="alert"><?= e($error) ?></p>
-          <?php endif; ?>
-
-          <div class="campo-grupo">
-            <label for="login-correo">Correo Electrónico:</label>
-            <input type="email" id="login-correo" name="correo" value="<?= e($correo) ?>"
-                   placeholder="correo@ejemplo.com" autocomplete="username" required autofocus>
-          </div>
-
-          <div class="campo-grupo">
-            <label for="login-password">Contraseña:</label>
-            <input type="password" id="login-password" name="password"
-                   placeholder="******" autocomplete="current-password" required>
-            <span id="error-login" class="texto-error"></span>
-          </div>
-
-          <button type="submit" class="btn-primario btn-bloque">Entrar</button>
-          <p class="texto-enlace">¿No tienes cuenta? <a href="index.php#registro">Regístrate gratis</a></p>
-        </form>
+  <main class="pagina-acceso">
+    <div class="acceso-tarjeta">
+      <!-- Panel de marca (se oculta en móvil) -->
+      <div class="acceso-marca">
+        <h2>Tu mes, bajo control.</h2>
+        <p>Entra para ver tus movimientos, tus presupuestos y cuánto te falta para tus metas.</p>
+        <div class="acceso-dato">
+          <span>Ahorro de noviembre</span>
+          <strong>$3,250.00</strong>
+          <div class="mes-barra"><i style="--avance: 65%"></i></div>
+          <small>65 % de la meta del mes</small>
+        </div>
       </div>
-    </section>
+
+      <form id="form-login" class="acceso-form" action="login.php" method="POST" novalidate>
+        <h1>Iniciar sesión</h1>
+        <p class="subtitulo-seccion">Usa el correo con el que te registraste.</p>
+
+        <?php if ($error): ?>
+          <p class="alerta alerta-error" role="alert"><?= e($error) ?></p>
+        <?php endif; ?>
+
+        <div class="campo-grupo">
+          <label for="login-correo">Correo electrónico</label>
+          <input type="email" id="login-correo" name="correo" value="<?= e($correo) ?>"
+                 placeholder="nombre@correo.com" autocomplete="username" required autofocus>
+        </div>
+
+        <div class="campo-grupo">
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" name="password"
+                 autocomplete="current-password" required>
+          <span id="error-login" class="texto-error" aria-live="polite"></span>
+        </div>
+
+        <button type="submit" class="btn-primario btn-bloque">Entrar</button>
+        <p class="texto-enlace">¿No tienes cuenta? <a href="index.php#registro">Crea una gratis</a></p>
+      </form>
+    </div>
   </main>
 
 <?php require 'includes/footer.php'; ?>

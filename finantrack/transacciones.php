@@ -30,14 +30,14 @@ $divisa        = divisa_usuario($conexion, $usuarioId);
 $simbolo       = $divisa['simbolo'];
 $hoy           = date('Y-m-d');
 
-$titulo = 'Transacciones';
+$titulo = 'Movimientos';
 require 'includes/header.php';
 ?>
 
   <main class="seccion-padding">
     <div class="encabezado-modulo">
       <div>
-        <h2>Transacciones</h2>
+        <h2>Movimientos</h2>
         <p>Registra y consulta tus ingresos y gastos (<?= e($divisa['codigo']) ?>).</p>
       </div>
       <div class="botones-encabezado">
@@ -135,14 +135,14 @@ require 'includes/header.php';
 
           <?php foreach ($transacciones as $t): ?>
             <tr>
-              <td><?= e(date('d/m/Y', strtotime($t['fecha']))) ?></td>
-              <td>
+              <td class="col-fecha"><?= e(date('d/m/Y', strtotime($t['fecha']))) ?></td>
+              <td class="col-categoria">
                 <span class="chip-categoria" style="--color-cat: <?= e($t['color']) ?>">
                   <?= e($t['icono']) ?> <?= e($t['categoria']) ?>
                 </span>
               </td>
               <td class="col-notas"><?= $t['notas'] !== null ? e($t['notas']) : '<span class="texto-tenue">—</span>' ?></td>
-              <td><?= e($t['metodo']) ?></td>
+              <td class="col-metodo"><?= e($t['metodo']) ?></td>
               <td class="col-monto monto-<?= e($t['tipo']) ?>">
                 <?= $t['tipo'] === 'ingreso' ? '+' : '−' ?><?= dinero($t['monto'], $simbolo) ?>
               </td>

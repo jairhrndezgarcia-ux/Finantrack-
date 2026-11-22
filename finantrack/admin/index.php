@@ -36,32 +36,32 @@ require '../includes/header.php';
         <div class="icono-tarjeta">👥</div>
         <h3><?= (int) $totales['usuarios'] ?> usuarios</h3>
         <p><?= (int) $totales['inactivos'] ?> cuenta(s) inactiva(s)</p>
-        <span class="enlace-admin">Gestionar cuentas →</span>
+        <span class="enlace-admin">Gestionar cuentas</span>
       </a>
       <a href="categorias.php" class="tarjeta-admin">
         <div class="icono-tarjeta">🏷️</div>
         <h3><?= (int) $totales['categorias'] ?> categorías</h3>
         <p>Categorías globales activas</p>
-        <span class="enlace-admin">Administrar →</span>
+        <span class="enlace-admin">Administrar</span>
       </a>
       <a href="metodos.php" class="tarjeta-admin">
         <div class="icono-tarjeta">💳</div>
         <h3><?= (int) $totales['metodos'] ?> métodos de pago</h3>
         <p>Métodos activos</p>
-        <span class="enlace-admin">Administrar →</span>
+        <span class="enlace-admin">Administrar</span>
       </a>
       <a href="divisas.php" class="tarjeta-admin">
         <div class="icono-tarjeta">💱</div>
         <h3><?= (int) $totales['divisas'] ?> divisas</h3>
         <p>Divisas disponibles en el registro</p>
-        <span class="enlace-admin">Administrar →</span>
+        <span class="enlace-admin">Administrar</span>
       </a>
     </div>
 
     <section class="panel-tarjeta">
       <div class="panel-encabezado">
         <h3>Últimos registros</h3>
-        <a href="usuarios.php">Ver todos →</a>
+        <a href="usuarios.php">Ver todos</a>
       </div>
       <p class="texto-tenue">Movimientos registrados en la plataforma: <?= (int) $totales['movimientos'] ?></p>
 

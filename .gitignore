@@ -1,0 +1,8 @@
+# Respaldos locales de la base de datos (pueden contener datos personales)
+respaldo_*.sql
+*.bak
+
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store

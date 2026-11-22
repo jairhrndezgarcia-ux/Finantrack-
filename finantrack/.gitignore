@@ -1,0 +1,14 @@
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Configuración local (credenciales de BD reales)
+config/conexion.local.php
+.env
+
+# Dependencias
+vendor/
+node_modules/

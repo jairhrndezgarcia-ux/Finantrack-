@@ -461,7 +461,364 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ===================================================
-     6. MENSAJES EMERGENTES (toast) - se ocultan solos
+     6. UTILIDADES COMPARTIDAS (módulo 5)
+     =================================================== */
+  const simbolo = window.SIMBOLO_DIVISA || '$';
+
+  function formatoDinero(cantidad) {
+    const signo = cantidad < 0 ? '-' : '';
+    return signo + simbolo + Math.abs(cantidad).toLocaleString('es-MX', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  /**
+   * Barras de progreso reactivas.
+   * Lee data-actual y data-limite, calcula el porcentaje, anima el ancho
+   * y cambia el color según el modo:
+   *   presupuesto: verde (< 80 %), amarillo (>= 80 %), rojo (>= 100 %)
+   *   meta:        azul (< 100 %), verde (>= 100 %)
+   */
+  function pintarProgreso(contenedor) {
+    const actual = Number(contenedor.dataset.actual) || 0;
+    const limite = Number(contenedor.dataset.limite) || 0;
+    const modo = contenedor.dataset.modo || 'presupuesto';
+    const porcentaje = limite > 0 ? (actual / limite) * 100 : 0;
+
+    const barra = contenedor.querySelector('.barra-progreso');
+    const relleno = contenedor.querySelector('.barra-relleno');
+    const texto = contenedor.querySelector('.progreso-porcentaje');
+
+    let estado;
+    if (modo === 'meta') {
+      estado = porcentaje >= 100 ? 'completo' : 'avance';
+    } else if (porcentaje >= 100) {
+      estado = 'excedido';
+    } else if (porcentaje >= 80) {
+      estado = 'alerta';
+    } else {
+      estado = 'normal';
+    }
+
+    contenedor.classList.remove('estado-normal', 'estado-alerta', 'estado-excedido', 'estado-avance', 'estado-completo');
+    contenedor.classList.add(`estado-${estado}`);
+
+    // Pequeña espera: primero se pinta en 0 y luego crece (transición CSS)
+    setTimeout(() => {
+      relleno.style.width = `${Math.min(porcentaje, 100)}%`;
+    }, 50);
+    texto.textContent = `${Math.round(porcentaje)}%`;
+    barra.setAttribute('aria-valuenow', Math.round(Math.min(porcentaje, 100)));
+  }
+
+  document.querySelectorAll('.progreso').forEach(pintarProgreso);
+
+  // Botones "Cancelar" de cualquier modal y clic fuera del formulario
+  document.querySelectorAll('[data-cerrar-modal]').forEach((boton) => {
+    boton.addEventListener('click', () => boton.closest('dialog').close());
+  });
+  document.querySelectorAll('dialog.modal').forEach((dialogo) => {
+    dialogo.addEventListener('click', (event) => {
+      if (event.target === dialogo) dialogo.close();
+    });
+  });
+
+  // Formularios de eliminar que piden confirmación (texto en data-confirmar)
+  document.querySelectorAll('.form-confirmar').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+      if (!confirm(form.dataset.confirmar)) event.preventDefault();
+    });
+  });
+
+
+  /* ===================================================
+     7. PRESUPUESTOS (presupuestos.php)
+     =================================================== */
+  const modalPresupuesto = document.getElementById('modal-presupuesto');
+
+  if (modalPresupuesto) {
+    const formPres = document.getElementById('form-presupuesto');
+    const campoAccionP = document.getElementById('pres-accion');
+    const campoIdP = document.getElementById('pres-id');
+    const grupoCategoria = document.getElementById('grupo-pres-categoria');
+    const campoCategoriaP = document.getElementById('pres-categoria');
+    const nombreFijo = document.getElementById('pres-nombre-fijo');
+    const campoLimite = document.getElementById('pres-limite');
+    const textoGastado = document.getElementById('pres-gastado-texto');
+    const previa = document.getElementById('pres-previa');
+    const errorPres = document.getElementById('error-presupuesto');
+    const tituloPres = document.getElementById('modal-pres-titulo');
+    let gastadoActual = 0;
+
+    // Vista previa: la barra reacciona mientras se escribe el límite
+    function actualizarPreviaPresupuesto() {
+      textoGastado.textContent = formatoDinero(gastadoActual);
+      previa.dataset.actual = gastadoActual;
+      previa.dataset.limite = Number(campoLimite.value) || 0;
+      pintarProgreso(previa);
+    }
+
+    function gastadoDeCategoria() {
+      const opcion = campoCategoriaP.selectedOptions[0];
+      return opcion ? Number(opcion.dataset.gastado) : 0;
+    }
+
+    function abrirModalPresupuesto(datos) {
+      const editando = Boolean(datos);
+      formPres.reset();
+      errorPres.textContent = '';
+
+      campoAccionP.value = editando ? 'editar' : 'crear';
+      campoIdP.value = editando ? datos.id : '0';
+      tituloPres.textContent = editando ? 'Editar presupuesto' : 'Nuevo presupuesto';
+
+      // Al editar, la categoría no cambia: solo el límite
+      grupoCategoria.classList.toggle('oculto', editando);
+      campoCategoriaP.disabled = editando;
+      nombreFijo.classList.toggle('oculto', !editando);
+
+      if (editando) {
+        nombreFijo.textContent = datos.nombre;
+        campoLimite.value = datos.limite;
+        gastadoActual = Number(datos.gastado);
+      } else {
+        gastadoActual = gastadoDeCategoria();
+      }
+
+      actualizarPreviaPresupuesto();
+      modalPresupuesto.showModal();
+      campoLimite.focus();
+    }
+
+    const btnNuevoPres = document.getElementById('btn-nuevo-presupuesto');
+    if (btnNuevoPres) btnNuevoPres.addEventListener('click', () => abrirModalPresupuesto(null));
+
+    document.querySelectorAll('.btn-editar-presupuesto').forEach((boton) => {
+      boton.addEventListener('click', () => abrirModalPresupuesto(boton.dataset));
+    });
+
+    campoCategoriaP.addEventListener('change', () => {
+      gastadoActual = gastadoDeCategoria();
+      actualizarPreviaPresupuesto();
+    });
+    campoLimite.addEventListener('input', actualizarPreviaPresupuesto);
+
+    formPres.addEventListener('submit', (event) => {
+      if (!(Number(campoLimite.value) > 0) || !/^\d+(\.\d{1,2})?$/.test(campoLimite.value)) {
+        event.preventDefault();
+        errorPres.textContent = 'Escribe un límite mayor a 0 con máximo 2 decimales.';
+      }
+    });
+  }
+
+
+  /* ===================================================
+     8. METAS DE AHORRO (metas.php)
+     =================================================== */
+  const modalMeta = document.getElementById('modal-meta');
+
+  if (modalMeta) {
+    const formMeta = document.getElementById('form-meta');
+    const campoAccionM = document.getElementById('meta-accion');
+    const campoIdM = document.getElementById('meta-id');
+    const campoNombreM = document.getElementById('meta-nombre');
+    const campoObjetivo = document.getElementById('meta-objetivo');
+    const campoFechaM = document.getElementById('meta-fecha');
+    const campoInicial = document.getElementById('meta-inicial');
+    const grupoInicial = document.getElementById('grupo-meta-inicial');
+    const calculoMeta = document.getElementById('calculo-meta');
+    const errorMeta = document.getElementById('error-meta');
+    const tituloMeta = document.getElementById('modal-meta-titulo');
+    const hoyMeta = campoFechaM.min;
+
+    // Calcula en vivo cuánto hay que ahorrar al mes para llegar a la meta
+    function calcularAhorroSugerido() {
+      const objetivo = Number(campoObjetivo.value) || 0;
+      const inicial = campoAccionM.value === 'crear' ? Number(campoInicial.value) || 0 : 0;
+      if (!objetivo || !campoFechaM.value) {
+        calculoMeta.textContent = '';
+        return;
+      }
+      const dias = Math.ceil((new Date(`${campoFechaM.value}T00:00`) - new Date(`${hoyMeta}T00:00`)) / 86400000);
+      const meses = Math.max(1, Math.ceil(dias / 30));
+      const faltante = Math.max(0, objetivo - inicial);
+      calculoMeta.textContent = faltante === 0
+        ? '¡Con el ahorro inicial ya alcanzas la meta!'
+        : `Necesitas ahorrar ${formatoDinero(faltante / meses)} al mes durante ${meses} mes(es).`;
+    }
+
+    [campoObjetivo, campoFechaM, campoInicial].forEach((campo) => {
+      campo.addEventListener('input', calcularAhorroSugerido);
+    });
+
+    function abrirModalMeta(datos) {
+      const editando = Boolean(datos);
+      formMeta.reset();
+      errorMeta.textContent = '';
+
+      campoAccionM.value = editando ? 'editar' : 'crear';
+      campoIdM.value = editando ? datos.id : '0';
+      tituloMeta.textContent = editando ? 'Editar meta' : 'Nueva meta';
+      grupoInicial.classList.toggle('oculto', editando);
+      // Al editar se permite conservar una fecha que ya pasó
+      campoFechaM.min = editando ? '' : hoyMeta;
+
+      if (editando) {
+        campoNombreM.value = datos.nombre;
+        campoObjetivo.value = datos.objetivo;
+        campoFechaM.value = datos.fecha;
+      }
+
+      calcularAhorroSugerido();
+      modalMeta.showModal();
+      campoNombreM.focus();
+    }
+
+    document.getElementById('btn-nueva-meta').addEventListener('click', () => abrirModalMeta(null));
+    document.querySelectorAll('.btn-editar-meta').forEach((boton) => {
+      boton.addEventListener('click', () => abrirModalMeta(boton.dataset));
+    });
+
+    formMeta.addEventListener('submit', (event) => {
+      let mensaje = '';
+      if (!campoNombreM.value.trim()) {
+        mensaje = 'Escribe un nombre para la meta.';
+      } else if (!(Number(campoObjetivo.value) > 0)) {
+        mensaje = 'El objetivo debe ser mayor a 0.';
+      } else if (!campoFechaM.value) {
+        mensaje = 'Selecciona una fecha límite.';
+      } else if (campoAccionM.value === 'crear' && campoFechaM.value < hoyMeta) {
+        mensaje = 'La fecha límite no puede estar en el pasado.';
+      }
+      if (mensaje) {
+        event.preventDefault();
+        errorMeta.textContent = mensaje;
+      }
+    });
+
+    // --- Abonar / retirar con vista previa del progreso ---
+    const modalMov = document.getElementById('modal-movimiento-meta');
+    const campoAccionMov = document.getElementById('mov-accion');
+    const campoIdMov = document.getElementById('mov-id');
+    const campoMontoMov = document.getElementById('mov-monto');
+    const previaMov = document.getElementById('mov-previa');
+    const errorMov = document.getElementById('error-mov');
+    let metaActual = { actual: 0, objetivo: 1, accion: 'abonar' };
+
+    function actualizarPreviaMeta() {
+      const monto = Number(campoMontoMov.value) || 0;
+      const nuevo = metaActual.accion === 'abonar' ? metaActual.actual + monto : metaActual.actual - monto;
+      previaMov.dataset.actual = Math.max(0, nuevo);
+      previaMov.dataset.limite = metaActual.objetivo;
+      pintarProgreso(previaMov);
+      errorMov.textContent = nuevo < 0 ? `Solo tienes ${formatoDinero(metaActual.actual)} ahorrados.` : '';
+    }
+
+    document.querySelectorAll('.btn-movimiento-meta').forEach((boton) => {
+      boton.addEventListener('click', () => {
+        const abonar = boton.dataset.accion === 'abonar';
+        metaActual = {
+          actual: Number(boton.dataset.actual),
+          objetivo: Number(boton.dataset.objetivo),
+          accion: boton.dataset.accion,
+        };
+        campoAccionMov.value = boton.dataset.accion;
+        campoIdMov.value = boton.dataset.id;
+        campoMontoMov.value = '';
+        document.getElementById('mov-titulo').textContent = abonar ? 'Abonar a la meta' : 'Retirar de la meta';
+        document.getElementById('mov-nombre').textContent = boton.dataset.nombre;
+        document.getElementById('mov-guardar').textContent = abonar ? 'Abonar' : 'Retirar';
+        actualizarPreviaMeta();
+        modalMov.showModal();
+        campoMontoMov.focus();
+      });
+    });
+
+    campoMontoMov.addEventListener('input', actualizarPreviaMeta);
+
+    document.getElementById('form-movimiento-meta').addEventListener('submit', (event) => {
+      const monto = Number(campoMontoMov.value);
+      if (!(monto > 0)) {
+        event.preventDefault();
+        errorMov.textContent = 'Escribe un monto mayor a 0.';
+      } else if (metaActual.accion === 'retirar' && monto > metaActual.actual) {
+        event.preventDefault();
+        errorMov.textContent = `Solo tienes ${formatoDinero(metaActual.actual)} ahorrados.`;
+      }
+    });
+  }
+
+
+  /* ===================================================
+     9. GRÁFICAS DEL PANEL (dashboard.php) - sin librerías
+     =================================================== */
+  const datosGraficas = document.getElementById('datos-graficas');
+
+  if (datosGraficas) {
+    const datos = JSON.parse(datosGraficas.textContent);
+    const simboloPanel = datos.simbolo;
+    const dinero = (n) => simboloPanel + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // --- Gráfica de dona: gastos por categoría (conic-gradient) ---
+    const contenedorDona = document.getElementById('grafica-dona');
+    const total = datos.categorias.reduce((suma, c) => suma + c.total, 0);
+
+    if (total > 0) {
+      let acumulado = 0;
+      const segmentos = datos.categorias.map((c) => {
+        const inicio = (acumulado / total) * 100;
+        acumulado += c.total;
+        const fin = (acumulado / total) * 100;
+        return `${c.color} ${inicio}% ${fin}%`;
+      });
+
+      const leyenda = datos.categorias.map((c) => `
+        <li>
+          <i class="punto" style="background:${c.color}"></i>
+          <span class="leyenda-nombre"></span>
+          <strong>${dinero(c.total)}</strong>
+          <span class="texto-tenue">${Math.round((c.total / total) * 100)}%</span>
+        </li>`).join('');
+
+      contenedorDona.innerHTML = `
+        <div class="dona" style="background: conic-gradient(${segmentos.join(', ')})">
+          <div class="dona-centro"><span>Total</span><strong>${dinero(total)}</strong></div>
+        </div>
+        <ul class="leyenda-dona">${leyenda}</ul>`;
+
+      // Los nombres se asignan con textContent (no como HTML) para evitar XSS
+      contenedorDona.querySelectorAll('.leyenda-nombre').forEach((span, i) => {
+        span.textContent = datos.categorias[i].nombre;
+      });
+    }
+
+    // --- Gráfica de barras: ingresos vs gastos por mes ---
+    const contenedorBarras = document.getElementById('grafica-barras');
+    const maximo = Math.max(1, ...datos.historial.flatMap((m) => [m.ingresos, m.gastos]));
+
+    datos.historial.forEach((mes) => {
+      const columna = document.createElement('div');
+      columna.className = 'columna-mes';
+      columna.innerHTML = `
+        <div class="barras-par">
+          <div class="barra-vertical barra-ingreso" title="Ingresos: ${dinero(mes.ingresos)}"></div>
+          <div class="barra-vertical barra-gasto" title="Gastos: ${dinero(mes.gastos)}"></div>
+        </div>
+        <span class="etiqueta-mes">${mes.etiqueta}</span>`;
+      contenedorBarras.appendChild(columna);
+
+      const [barraIngreso, barraGasto] = columna.querySelectorAll('.barra-vertical');
+      setTimeout(() => {
+        barraIngreso.style.height = `${(mes.ingresos / maximo) * 100}%`;
+        barraGasto.style.height = `${(mes.gastos / maximo) * 100}%`;
+      }, 50);
+    });
+  }
+
+
+  /* ===================================================
+     10. MENSAJES EMERGENTES (toast) - se ocultan solos
      =================================================== */
   const toast = document.querySelector('.toast');
 

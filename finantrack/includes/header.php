@@ -27,6 +27,8 @@ $mensajeFlash = flash();
         <a href="<?= $base . ruta_inicio() ?>"><?= es_admin() ? 'Panel de administración' : 'Mi panel' ?></a>
         <?php if (!es_admin()): ?>
           <a href="<?= $base ?>transacciones.php">Transacciones</a>
+          <a href="<?= $base ?>presupuestos.php">Presupuestos</a>
+          <a href="<?= $base ?>metas.php">Metas</a>
         <?php endif; ?>
         <a href="<?= $base . (es_admin() ? 'admin/categorias.php' : 'categorias.php') ?>">Categorías</a>
         <a href="<?= $base ?>logout.php" class="btn-nav">Cerrar sesión</a>

@@ -121,7 +121,156 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   /* ===================================================
-     4. MENSAJES EMERGENTES (toast) - se ocultan solos
+     4. MÓDULO DE CATEGORÍAS (categorias.php y admin/categorias.php)
+     =================================================== */
+  const modalCategoria = document.getElementById('modal-categoria');
+
+  if (modalCategoria) {
+    const formCategoria = document.getElementById('form-categoria');
+    const campoAccion = document.getElementById('cat-accion');
+    const campoId = document.getElementById('cat-id');
+    const campoNombre = document.getElementById('cat-nombre');
+    const campoTipo = document.getElementById('cat-tipo');
+    const campoColor = document.getElementById('cat-color');
+    const notaTipo = document.getElementById('nota-tipo');
+    const errorCategoria = document.getElementById('error-categoria');
+    const tituloModal = document.getElementById('modal-titulo');
+
+    // --- Vista previa en vivo ---
+    const vistaPrevia = document.getElementById('vista-previa');
+    const previaIcono = document.getElementById('previa-icono');
+    const previaNombre = document.getElementById('previa-nombre');
+    const previaTipo = document.getElementById('previa-tipo');
+
+    function iconoSeleccionado() {
+      const marcado = formCategoria.querySelector('input[name="icono"]:checked');
+      return marcado ? marcado.value : '💰';
+    }
+
+    function actualizarVistaPrevia() {
+      vistaPrevia.style.setProperty('--color-cat', campoColor.value);
+      previaIcono.textContent = iconoSeleccionado();
+      previaNombre.textContent = campoNombre.value.trim() || 'Nombre de la categoría';
+      const esIngreso = campoTipo.value === 'ingreso';
+      previaTipo.textContent = esIngreso ? 'Ingreso' : 'Gasto';
+      previaTipo.className = `badge badge-${campoTipo.value}`;
+    }
+
+    formCategoria.addEventListener('input', actualizarVistaPrevia);
+    formCategoria.addEventListener('change', actualizarVistaPrevia);
+
+    // --- Abrir el modal (alta o modificación) ---
+    function abrirModal(datos) {
+      const editando = Boolean(datos);
+      formCategoria.reset();
+      errorCategoria.textContent = '';
+
+      campoAccion.value = editando ? 'editar' : 'crear';
+      campoId.value = editando ? datos.id : '0';
+      tituloModal.textContent = editando ? 'Editar categoría' : 'Nueva categoría';
+
+      if (editando) {
+        // Precarga de datos de la categoría seleccionada
+        campoNombre.value = datos.nombre;
+        campoTipo.value = datos.tipo;
+        campoColor.value = datos.color;
+        const radioIcono = [...formCategoria.querySelectorAll('input[name="icono"]')]
+          .find((radio) => radio.value === datos.icono);
+        if (radioIcono) radioIcono.checked = true;
+      }
+
+      // Si ya tiene movimientos, no se permite cambiar el tipo
+      const bloquearTipo = editando && Number(datos.usos) > 0;
+      campoTipo.disabled = bloquearTipo;
+      notaTipo.classList.toggle('oculto', !bloquearTipo);
+
+      actualizarVistaPrevia();
+      modalCategoria.showModal();
+      campoNombre.focus();
+    }
+
+    document.getElementById('btn-nueva-categoria')
+      .addEventListener('click', () => abrirModal(null));
+
+    document.querySelectorAll('.btn-editar').forEach((boton) => {
+      boton.addEventListener('click', () => abrirModal(boton.dataset));
+    });
+
+    // --- Cerrar el modal ---
+    document.getElementById('btn-cancelar-modal')
+      .addEventListener('click', () => modalCategoria.close());
+
+    modalCategoria.addEventListener('click', (event) => {
+      if (event.target === modalCategoria) modalCategoria.close(); // clic fuera del formulario
+    });
+
+    // --- Validación antes de guardar ---
+    formCategoria.addEventListener('submit', (event) => {
+      const nombre = campoNombre.value.trim();
+      if (nombre.length === 0 || nombre.length > 50) {
+        event.preventDefault();
+        errorCategoria.textContent = 'Escribe un nombre de máximo 50 caracteres.';
+        campoNombre.focus();
+        return;
+      }
+      // Un <select> deshabilitado no se envía: se habilita justo antes de enviar
+      campoTipo.disabled = false;
+    });
+
+    // --- Baja con validación y confirmación ---
+    document.querySelectorAll('.form-eliminar').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        const nombre = form.dataset.nombre;
+        const usos = Number(form.dataset.usos);
+
+        if (usos > 0) {
+          event.preventDefault();
+          alert(`No puedes eliminar "${nombre}" porque tiene ${usos} movimiento(s) ligados.`);
+          return;
+        }
+        if (!confirm(`¿Seguro que quieres eliminar la categoría "${nombre}"?`)) {
+          event.preventDefault();
+        }
+      });
+    });
+
+    // --- Filtro por tipo y búsqueda por nombre ---
+    const botonesFiltro = document.querySelectorAll('.filtro');
+    const campoBuscar = document.getElementById('buscar-categoria');
+    const tarjetas = document.querySelectorAll('#grid-categorias .tarjeta-categoria');
+    const sinResultados = document.getElementById('sin-resultados');
+    let filtroActual = 'todas';
+
+    function aplicarFiltros() {
+      const texto = campoBuscar.value.trim().toLowerCase();
+      let visibles = 0;
+
+      tarjetas.forEach((tarjeta) => {
+        const coincideTipo = filtroActual === 'todas' || tarjeta.dataset.tipo === filtroActual;
+        const coincideTexto = tarjeta.dataset.nombre.includes(texto);
+        const mostrar = coincideTipo && coincideTexto;
+        tarjeta.classList.toggle('oculto', !mostrar);
+        if (mostrar) visibles++;
+      });
+
+      sinResultados.classList.toggle('oculto', visibles > 0);
+    }
+
+    botonesFiltro.forEach((boton) => {
+      boton.addEventListener('click', () => {
+        botonesFiltro.forEach((b) => b.classList.remove('activo'));
+        boton.classList.add('activo');
+        filtroActual = boton.dataset.filtro;
+        aplicarFiltros();
+      });
+    });
+
+    campoBuscar.addEventListener('input', aplicarFiltros);
+  }
+
+
+  /* ===================================================
+     5. MENSAJES EMERGENTES (toast) - se ocultan solos
      =================================================== */
   const toast = document.querySelector('.toast');
 

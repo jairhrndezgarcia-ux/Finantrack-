@@ -63,6 +63,31 @@ function flash(?string $mensaje = null, string $tipo = 'info'): ?array
     return $pendiente;
 }
 
+/**
+ * Protección CSRF: cada formulario que modifica datos lleva un token secreto
+ * de la sesión. Así otra página web no puede enviar formularios en nombre
+ * del usuario sin que se note.
+ */
+function csrf_token(): string
+{
+    if (empty($_SESSION['csrf'])) {
+        $_SESSION['csrf'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf'];
+}
+
+/** Campo oculto con el token, para imprimir dentro de cada <form method="POST">. */
+function campo_csrf(): string
+{
+    return '<input type="hidden" name="csrf" value="' . csrf_token() . '">';
+}
+
+/** ¿El token enviado coincide con el de la sesión? */
+function verificar_csrf(): bool
+{
+    return hash_equals($_SESSION['csrf'] ?? '', (string) ($_POST['csrf'] ?? ''));
+}
+
 /** Redirige y termina el script. */
 function redirigir(string $url): void
 {

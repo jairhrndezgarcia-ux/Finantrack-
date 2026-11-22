@@ -42,7 +42,7 @@ require '../includes/header.php';
         <div class="icono-tarjeta">🏷️</div>
         <h3><?= (int) $totales['categorias'] ?> categorías</h3>
         <p>Categorías globales activas.</p>
-        <span class="etiqueta-pronto">Gestión próximamente</span>
+        <a href="categorias.php" class="btn-primario btn-chico">Administrar</a>
       </article>
       <article class="tarjeta-funcion">
         <div class="icono-tarjeta">💱</div>

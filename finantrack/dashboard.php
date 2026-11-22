@@ -29,7 +29,7 @@ require 'includes/header.php';
         <div class="icono-tarjeta">🏷️</div>
         <h3>Categorías</h3>
         <p>Crea categorías de gasto personalizadas.</p>
-        <span class="etiqueta-pronto">Próximamente</span>
+        <a href="categorias.php" class="btn-primario btn-chico">Administrar</a>
       </article>
 
       <article class="tarjeta-funcion">
